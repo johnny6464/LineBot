@@ -73,6 +73,7 @@ def handle_message(event):
     index = random.randint(0, len(images) - 1)
     url = images[index].link
     if event.message.text == "corgi" or event.message.text == "柯基":
+		print('a')
         message = ImageSendMessage(
             original_content_url=url,
             preview_image_url=url
