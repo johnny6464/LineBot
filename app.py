@@ -47,7 +47,7 @@ def callback():
 
 def technews():
     target_url = 'https://technews.tw/'
-    print('Start parsing movie ...')
+    print('Start parsing technews ...')
     rs = requests.session()
     res = rs.get(target_url, verify=False)
     res.encoding = 'utf-8'
