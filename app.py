@@ -71,7 +71,6 @@ def movie():
 	res.encoding = 'utf-8'
 	soup = BeautifulSoup(res.text, 'lxml')   
 	content = ""
-	print(soup.select('html body div#maincontainer main div.maincontent.ga_index div#container div#content_r div.r_box div.r_box_inner div.ranking_inner_r div.tab-content div#list1 ul.ranking_list_r a'))
 	for index , data in enumerate(soup.select('html body div#maincontainer main div.maincontent.ga_index div#container div#content_r div.r_box div.r_box_inner div.ranking_inner_r div.tab-content div#list1 ul.ranking_list_r a')):
 		if index == 20:
 			return content 
@@ -99,9 +98,9 @@ def handle_message(event):
         content = technews()
         message = TextSendMessage(text=content)
 		
-	elif event.message.text == "最新電影":
-		a=movie()
-		line_bot_api.reply_message(event.reply_token,TextSendMessage(text=a))
+    elif event.message.text == "最新電影":
+        a=movie()
+        line_bot_api.reply_message(event.reply_token,TextSendMessage(text=a))
 		
     else:
         message = TextSendMessage(text=event.message.text)
