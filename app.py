@@ -73,21 +73,20 @@ def handle_message(event):
     index = random.randint(0, len(images) - 1)
     url = images[index].link
     if event.message.text == "corgi" or event.message.text == "柯基":
-		print(1)
-        message = ImageSendMessage(
-            original_content_url=url,
-            preview_image_url=url
-        )
-    elif event.message.text == "news":
-        content = technews()
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=content))
-    else:
-        message = TextSendMessage(text=event.message.text)
-        line_bot_api.reply_message(
-            event.reply_token,
-            message)
+		message = ImageSendMessage(
+			original_content_url=url,
+			preview_image_url=url
+		)
+	elif event.message.text == "news":
+		content = technews()
+		line_bot_api.reply_message(
+			event.reply_token,
+			TextSendMessage(text=content))
+	else:
+		message = TextSendMessage(text=event.message.text)
+		line_bot_api.reply_message(
+			event.reply_token,
+			message)
 
 
 import os
