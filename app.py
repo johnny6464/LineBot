@@ -4,6 +4,7 @@ import re
 import configparser
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
+import urllib
 
 from flask import Flask, request, abort
 
@@ -63,6 +64,22 @@ def technews():
         content += '{}\n{}\n\n'.format(title, link)
     return content
 
+def movie():
+	target_url = 'https://movies.yahoo.com.tw/'
+	rs = requests.session()
+	res = rs.get(target_url, verify=True)
+	res.encoding = 'utf-8'
+	soup = BeautifulSoup(res.text, 'lxml')   
+	content = ""
+	print(soup.select('html body div#maincontainer main div.maincontent.ga_index div#container div#content_r div.r_box div.r_box_inner div.ranking_inner_r div.tab-content div#list1 ul.ranking_list_r a'))
+	for index , data in enumerate(soup.select('html body div#maincontainer main div.maincontent.ga_index div#container div#content_r div.r_box div.r_box_inner div.ranking_inner_r div.tab-content div#list1 ul.ranking_list_r a')):
+		if index == 20:
+			return content 
+		title = data.text
+		link =  data['href']
+		content += '{}\n{}\n'.format(title, link)
+	return content
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -81,7 +98,11 @@ def handle_message(event):
     elif event.message.text == "news":
         content = technews()
         message = TextSendMessage(text=content)
-
+		
+	elif event.message.text == "最新電影":
+		a=movie()
+		line_bot_api.reply_message(event.reply_token,TextSendMessage(text=a))
+		
     else:
         message = TextSendMessage(text=event.message.text)
 
