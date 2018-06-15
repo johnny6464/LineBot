@@ -22,8 +22,9 @@ config.read("config.ini")
 # config
 line_bot_api = LineBotApi(config['line_bot']['Channel_Access_Token'])
 handler = WebhookHandler(config['line_bot']['Channel_Secret'])
-client_id = config['imgur_api']['Client_ID']
+client_id = config['imgur_api']['Client_id']
 client_secret = config['imgur_api']['Client_Secret']
+album_id = config['imgur_api']['Album_id']
 
 
 # 監聽所有來自 /callback 的 Post Request
@@ -65,20 +66,25 @@ def technews():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    message = ""
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
-    client = ImgurClient(client_id, client_secret)
-    a = client.get_account_albums("kevin86117")
-    images = client.get_album_images(a[0].id)
-    index = random.randint(0, len(images) - 1)
-    url = images[index].link
+
     if event.message.text == "corgi" or event.message.text == "柯基":
+        client = ImgurClient(client_id, client_secret)
+        album = client.get_account_albums(album_id)
+        images = client.get_album_images(album[0].id)
+        index = random.randint(0, len(images) - 1)
+        url = images[index].link
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
+
     elif event.message.text == "news":
         content = technews()
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=content))
+        message = TextSendMessage(text=content)
+
     else:
         message = TextSendMessage(text=event.message.text)
+
     line_bot_api.reply_message(event.reply_token, message)
 
 
