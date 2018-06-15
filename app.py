@@ -46,7 +46,7 @@ def callback():
 
     return 'OK'
 
-
+# 當看到"news"時會去開起technews網站內容
 def technews():
     target_url = 'https://technews.tw/'
     print('Start parsing technews ...')
@@ -63,7 +63,7 @@ def technews():
         link = data['href']
         content += '{}\n{}\n\n'.format(title, link)
     return content
-
+# 當是"最新電影"的時候會去查詢電影
 def movie():
 	target_url = 'https://movies.yahoo.com.tw/'
 	rs = requests.session()
@@ -79,7 +79,8 @@ def movie():
 		content += '{}\n{}\n'.format(title, link)
 	return content
 
-
+# 當看到"corgi"或"柯基"的訊息時會去相簿隨機po出一張圖片 當是"youtube"的時候會將後面的字做搜尋並列出查詢結果的一項
+# 為根據特別訊息做出反應的code
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     message = ""
