@@ -94,6 +94,20 @@ def handle_message(event):
         url = images[index].link
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
 
+    elif "youtube" in event.message.text:
+        target = event.message.text[8:len(event.message.text)]
+        target_url = 'https://www.youtube.com/results?search_query=' + target
+        rs = requests.session()
+        res = rs.get(target_url, verify=False)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        seqs = ['https://www.youtube.com{}'.format(data.find('a')['href']) for data in soup.select('.yt-lockup-title')]
+        line_bot_api.reply_message(
+            event.reply_token, [
+                TextSendMessage(text=seqs[0]),
+                TextSendMessage(text=seqs[1]),
+                TextSendMessage(text=seqs[2])
+            ])
+
     elif event.message.text == "news":
         content = technews()
         message = TextSendMessage(text=content)
