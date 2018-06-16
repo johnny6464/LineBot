@@ -1,10 +1,9 @@
 import random
 import requests
-import re
 import configparser
+import os
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
-import urllib
 
 from flask import Flask, request, abort
 
@@ -47,11 +46,45 @@ def callback():
     return 'OK'
 
 
+def corgi():
+    client = ImgurClient(client_id, client_secret)
+    album = client.get_account_albums(album_id)
+    images = client.get_album_images(album[0].id)
+    index = random.randint(0, len(images) - 1)
+    url = images[index].link
+    return url
+
+
+def youtube(target):
+    target_url = 'https://www.youtube.com/results?search_query=' + target
+    rs = requests.session()
+    res = rs.get(target_url, verify=True)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+
+    seqs = ['https://www.youtube.com{}'.format(data.find('a')['href']) for data in soup.select('.yt-lockup-title')]
+    content = '{}\n{}\n{}'.format(seqs[0], seqs[1], seqs[2])
+    return content
+
+
+def translate(target):
+    target_url = 'https://translate.google.com.tw/m/translate?hl=zh-TW#en/zh-TW/' + target
+    rs = requests.session()
+    res = rs.get(target_url, verify=True)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'lxml')
+
+    data = soup.select('span.tlid-translation')
+    print(str(data))
+    content = data.text
+    return content
+
+
 def technews():
     target_url = 'https://technews.tw/'
     print('Start parsing technews ...')
     rs = requests.session()
-    res = rs.get(target_url, verify=False)
+    res = rs.get(target_url, verify=True)
     res.encoding = 'utf-8'
     soup = BeautifulSoup(res.text, 'html.parser')
     content = ""
@@ -64,20 +97,23 @@ def technews():
         content += '{}\n{}\n\n'.format(title, link)
     return content
 
+
 def movie():
-	target_url = 'https://movies.yahoo.com.tw/'
-	rs = requests.session()
-	res = rs.get(target_url, verify=True)
-	res.encoding = 'utf-8'
-	soup = BeautifulSoup(res.text, 'lxml')   
-	content = ""
-	for index , data in enumerate(soup.select('html body div#maincontainer main div.maincontent.ga_index div#container div#content_r div.r_box div.r_box_inner div.ranking_inner_r div.tab-content div#list1 ul.ranking_list_r a')):
-		if index == 20:
-			return content 
-		title = data.text
-		link =  data['href']
-		content += '{}\n{}\n'.format(title, link)
-	return content
+    target_url = 'https://movies.yahoo.com.tw/'
+    print('Start parsing movies ...')
+    rs = requests.session()
+    res = rs.get(target_url, verify=True)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'lxml')
+    content = ""
+
+    for index , data in enumerate(soup.select('div.tab-content ul.ranking_list_r a')):
+        if index == 10:
+            return content
+        title = data.find('span').text
+        link = data['href']
+        content += '{}\n{}\n\n'.format(title, link)
+    return content
 
 
 @handler.add(MessageEvent, message=TextMessage)
@@ -87,42 +123,65 @@ def handle_message(event):
     print("event.message.text:", event.message.text)
 
     if event.message.text == "corgi" or event.message.text == "柯基":
-        client = ImgurClient(client_id, client_secret)
-        album = client.get_account_albums(album_id)
-        images = client.get_album_images(album[0].id)
-        index = random.randint(0, len(images) - 1)
-        url = images[index].link
+        url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
-
-    elif "youtube" in event.message.text:
-        target = event.message.text[8:len(event.message.text)]
-        target_url = 'https://www.youtube.com/results?search_query=' + target
-        rs = requests.session()
-        res = rs.get(target_url, verify=False)
-        soup = BeautifulSoup(res.text, 'html.parser')
-        seqs = ['https://www.youtube.com{}'.format(data.find('a')['href']) for data in soup.select('.yt-lockup-title')]
-        line_bot_api.reply_message(
-            event.reply_token, [
-                TextSendMessage(text=seqs[0]),
-                TextSendMessage(text=seqs[1]),
-                TextSendMessage(text=seqs[2])
-            ])
-
+    elif str(event.message.text)[0:7] == "youtube":
+        target = event.message.text[8:]
+        content = youtube(target)
+        message = TextSendMessage(text=content)
+    elif str(event.message.text)[0:2] == "翻譯":
+        target = event.message.text[3:len(event.message.text)]
+        content = translate(target)
+        message = TextSendMessage(text=content)
     elif event.message.text == "news":
         content = technews()
         message = TextSendMessage(text=content)
-		
-    elif event.message.text == "最新電影":
-        a=movie()
-        line_bot_api.reply_message(event.reply_token,TextSendMessage(text=a))
-		
+    elif event.message.text == "movies":
+        content = movie()
+        message = TextSendMessage(text=content)
+    elif event.message.text == "開始玩":
+        buttons_template = TemplateSendMessage(
+            alt_text='開始玩 template',
+            template=ButtonsTemplate(
+                title='選擇服務',
+                text='請選擇',
+                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
+                actions=[
+                    MessageTemplateAction(
+                        label='新聞',
+                        text='news'
+                    ),
+                    MessageTemplateAction(
+                        label='電影',
+                        text='movies'
+                    ),
+                    MessageTemplateAction(
+                        label='動物',
+                        text='corgi'
+                    )
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+        return 0
     else:
-        message = TextSendMessage(text=event.message.text)
+        message = TextSendMessage(text="人家看不懂耶~")
 
     line_bot_api.reply_message(event.reply_token, message)
 
 
-import os
+@handler.add(MessageEvent, message=StickerMessage)
+def handle_sticker_message(event):
+    print("package_id:", event.message.package_id)
+    print("sticker_id:", event.message.sticker_id)
+    sticker_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 21, 100, 101, 102, 103, 104, 105, 106,
+                   107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125,
+                   126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 401, 402]
+    index_id = random.randint(0, len(sticker_ids) - 1)
+    sticker_id = str(sticker_ids[index_id])
+    sticker_message = StickerSendMessage(package_id='1', sticker_id=sticker_id)
+    line_bot_api.reply_message(event.reply_token, sticker_message)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
