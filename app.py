@@ -2,6 +2,9 @@ import random
 import requests
 import configparser
 import os
+import urllib.request
+import sys
+from urllib.parse import quote
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
 
@@ -25,6 +28,14 @@ handler = WebhookHandler(config['line_bot']['Channel_Secret'])
 client_id = config['imgur_api']['Client_id']
 client_secret = config['imgur_api']['Client_Secret']
 album_id = config['imgur_api']['Album_id']
+
+
+# Extra funciton
+def is_chinese(uchar):
+    if u'\u4e00' <= uchar <= u'\u9fa5':
+        return True
+    else:
+        return False
 
 
 # 監聽所有來自 /callback 的 Post Request
@@ -67,16 +78,16 @@ def youtube(target):
     return content
 
 
-def translate(target):
-    target_url = 'https://translate.google.com.tw/m/translate?hl=zh-TW#en/zh-TW/' + target
-    rs = requests.session()
-    res = rs.get(target_url, verify=True)
-    res.encoding = 'utf-8'
-    soup = BeautifulSoup(res.text, 'lxml')
-
-    data = soup.select('span.tlid-translation')
-    print(str(data))
-    content = data.text
+def translate(query, to_l="zh-TW", from_l="en"):
+    typ = sys.getfilesystemencoding()
+    C_agent = {
+        'User-Agent': "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36"}
+    flag = 'class="t0">'
+    target_url = "http://translate.google.com/m?hl=%s&sl=%s&q=%s" % (to_l, from_l, query.replace(" ", "+"))
+    request = urllib.request.Request(target_url, headers=C_agent)
+    page = str(urllib.request.urlopen(request).read().decode(typ))
+    content = page[page.find(flag) + len(flag):]
+    content = content.split("<")[0]
     return content
 
 
@@ -107,7 +118,7 @@ def movie():
     soup = BeautifulSoup(res.text, 'lxml')
     content = ""
 
-    for index , data in enumerate(soup.select('div.tab-content ul.ranking_list_r a')):
+    for index, data in enumerate(soup.select('div.tab-content ul.ranking_list_r a')):
         if index == 10:
             return content
         title = data.find('span').text
@@ -130,8 +141,11 @@ def handle_message(event):
         content = youtube(target)
         message = TextSendMessage(text=content)
     elif str(event.message.text)[0:2] == "翻譯":
-        target = event.message.text[3:len(event.message.text)]
-        content = translate(target)
+        target = event.message.text[3:]
+        if is_chinese(target[0]):
+            content = translate(quote(target), "en", "zh-TW")
+        else:
+            content = translate(target)
         message = TextSendMessage(text=content)
     elif event.message.text == "news":
         content = technews()
