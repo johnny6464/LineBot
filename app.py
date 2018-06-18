@@ -139,7 +139,6 @@ def handle_message(event):
     if event.message.text.lower() in Animal:
         url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
-<<<<<<< HEAD
     elif event.message.text == "HELP" or event.message.text == "help":
         buttons_template = TemplateSendMessage(
             alt_text='help',
@@ -187,10 +186,6 @@ def handle_message(event):
     elif tubesearch == True:
         tubesearch = False
         target = event.message.text
-=======
-    elif str(event.message.text)[0:7].lower() == "youtube":
-        target = event.message.text[8:]
->>>>>>> 40eb554698765841514dfbbfc23994c4a73e67c6
         content = youtube(target)
         message = TextSendMessage(text=content)
     elif event.message.text == "youtube" and tubesearch == False:
