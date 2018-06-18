@@ -31,6 +31,7 @@ album_id = config['imgur_api']['Album_id']
 Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
 Movie = ["movie", "movies", "電影"]
 News = ["news", "新聞"]
+tubesearch = False
 
 
 # Extra funciton
@@ -132,6 +133,7 @@ def movie():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    global tubesearch
     message = ""
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
@@ -139,8 +141,8 @@ def handle_message(event):
     if event.message.text.lower() in Animal:
         url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
-    elif event.message.text == "HELP" or event.message.text == "help":
-        buttons_template = TemplateSendMessage(
+    elif event.message.text.lower() == "help":
+        message = TemplateSendMessage(
             alt_text='help',
             template=ButtonsTemplate(
                 title='help',
@@ -166,9 +168,8 @@ def handle_message(event):
                 ]
             )
         )
-        line_bot_api.reply_message(event.reply_token, buttons_template)
-    elif event.message.text == "More" or event.message.text == "more":
-        buttons_template = TemplateSendMessage(
+    elif event.message.text.lower() == "more":
+        message = TemplateSendMessage(
             alt_text='help2',
             template=ButtonsTemplate(
                 title='help2',
@@ -182,13 +183,12 @@ def handle_message(event):
                 ]
             )
         )
-        line_bot_api.reply_message(event.reply_token, buttons_template)
-    elif tubesearch == True:
+    elif tubesearch:
         tubesearch = False
         target = event.message.text
         content = youtube(target)
         message = TextSendMessage(text=content)
-    elif event.message.text == "youtube" and tubesearch == False:
+    elif event.message.text == "youtube" and not tubesearch:
         tubesearch = True
         message = TextSendMessage(text="請輸入查詢內容")
     elif str(event.message.text)[0:2] == "翻譯":
@@ -207,31 +207,6 @@ def handle_message(event):
     elif event.message.text.lower() in Movie:
         content = movie()
         message = TextSendMessage(text=content)
-    elif event.message.text == "開始玩":
-        buttons_template = TemplateSendMessage(
-            alt_text='開始玩 template',
-            template=ButtonsTemplate(
-                title='選擇服務',
-                text='請選擇',
-                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
-                actions=[
-                    MessageTemplateAction(
-                        label='新聞',
-                        text='news'
-                    ),
-                    MessageTemplateAction(
-                        label='電影',
-                        text='movies'
-                    ),
-                    MessageTemplateAction(
-                        label='動物',
-                        text='corgi'
-                    )
-                ]
-            )
-        )
-        line_bot_api.reply_message(event.reply_token, buttons_template)
-        return 0
     else:
         message = TextSendMessage(text="人家看不懂耶~")
 
@@ -252,6 +227,5 @@ def handle_sticker_message(event):
 
 
 if __name__ == "__main__":
-    tubesearch = False
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
