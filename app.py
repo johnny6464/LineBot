@@ -7,9 +7,7 @@ import sys
 from urllib.parse import quote
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
-
 from flask import Flask, request, abort
-
 from linebot import (
     LineBotApi, WebhookHandler
 )
@@ -28,6 +26,11 @@ handler = WebhookHandler(config['line_bot']['Channel_Secret'])
 client_id = config['imgur_api']['Client_id']
 client_secret = config['imgur_api']['Client_Secret']
 album_id = config['imgur_api']['Album_id']
+
+# keyword
+Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
+Movie = ["movie", "movies", "電影"]
+News = ["news", "新聞"]
 
 
 # Extra funciton
@@ -133,9 +136,10 @@ def handle_message(event):
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
 
-    if event.message.text == "corgi" or event.message.text == "柯基":
+    if event.message.text.lower() in Animal:
         url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
+<<<<<<< HEAD
     elif event.message.text == "HELP" or event.message.text == "help":
         buttons_template = TemplateSendMessage(
             alt_text='help',
@@ -183,22 +187,29 @@ def handle_message(event):
     elif tubesearch == True:
         tubesearch = False
         target = event.message.text
+=======
+    elif str(event.message.text)[0:7].lower() == "youtube":
+        target = event.message.text[8:]
+>>>>>>> 40eb554698765841514dfbbfc23994c4a73e67c6
         content = youtube(target)
         message = TextSendMessage(text=content)
     elif event.message.text == "youtube" and tubesearch == False:
         tubesearch = True
         message = TextSendMessage(text="請輸入查詢內容")
     elif str(event.message.text)[0:2] == "翻譯":
-        target = event.message.text[3:]
-        if is_chinese(target[0]):
-            content = translate(quote(target), "en", "zh-TW")
+        if event.message.text[3:]:
+            target = event.message.text[3:]
+            if is_chinese(target[0]):
+                content = translate(quote(target), "en", "zh-TW")
+            else:
+                content = translate(target)
+            message = TextSendMessage(text=content)
         else:
-            content = translate(target)
-        message = TextSendMessage(text=content)
-    elif event.message.text == "news":
+            message = TextSendMessage(text="請輸入要翻譯的字")
+    elif event.message.text.lower() in News:
         content = technews()
         message = TextSendMessage(text=content)
-    elif event.message.text == "movies":
+    elif event.message.text.lower() in Movie:
         content = movie()
         message = TextSendMessage(text=content)
     elif event.message.text == "開始玩":
