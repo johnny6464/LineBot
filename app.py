@@ -136,10 +136,58 @@ def handle_message(event):
     if event.message.text == "corgi" or event.message.text == "柯基":
         url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
-    elif str(event.message.text)[0:7] == "youtube":
-        target = event.message.text[8:]
+    elif event.message.text == "HELP" or event.message.text == "help":
+        buttons_template = TemplateSendMessage(
+            alt_text='help',
+            template=ButtonsTemplate(
+                title='help',
+                text='請選擇',
+                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
+                actions=[
+                    MessageTemplateAction(
+                        label='新聞',
+                        text='news'
+                    ),
+                    MessageTemplateAction(
+                        label='電影',
+                        text='movies'
+                    ),
+                    MessageTemplateAction(
+                        label='動物',
+                        text='corgi'
+                    ),
+                    MessageTemplateAction(
+                        label='more',
+                        text='more'
+                    )
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+    elif event.message.text == "More" or event.message.text == "more":
+        buttons_template = TemplateSendMessage(
+            alt_text='help2',
+            template=ButtonsTemplate(
+                title='help2',
+                text='請選擇',
+                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
+                actions=[
+                    MessageTemplateAction(
+                        label='YouTube查詢',
+                        text='youtube'
+                    )
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, buttons_template)
+    elif tubesearch == True:
+        tubesearch = False
+        target = event.message.text
         content = youtube(target)
         message = TextSendMessage(text=content)
+    elif event.message.text == "youtube" and tubesearch == False:
+        tubesearch = True
+        message = TextSendMessage(text="請輸入查詢內容")
     elif str(event.message.text)[0:2] == "翻譯":
         target = event.message.text[3:]
         if is_chinese(target[0]):
@@ -198,5 +246,6 @@ def handle_sticker_message(event):
 
 
 if __name__ == "__main__":
+    tubesearch = False
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
