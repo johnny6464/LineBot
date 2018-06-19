@@ -4,6 +4,7 @@ import configparser
 import os
 import urllib.request
 import sys
+from selenium import webdriver
 from urllib.parse import quote
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
@@ -32,6 +33,13 @@ Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
 Movie = ["movie", "movies", "電影"]
 News = ["news", "新聞"]
 tubesearch = False
+City_convert = {'台北': 'Taipei_City', '新北': 'New_Taipei_City', '桃園': 'Taoyuan_City',
+                '台中': 'Taichung_City', '台南': 'Tainan_City', '高雄': 'Kaohsiung_City',
+                '基隆': 'Keelung_City', '新竹': 'Hsinchu_City','苗栗': 'Miaoli_County',
+                '彰化': 'Changhua_County', '南投': 'Nantou_County','雲林': 'Yunlin_County',
+                '嘉義': 'Chiayi_City','屏東': 'Pingtung_County', '宜蘭': 'Yilan_County',
+                '花蓮': 'Hualien_County','台東': 'Taitung_County', '澎湖': 'Penghu_County',
+                '金門': 'Kinmen_County', '連江': 'Lienchiang_County'}
 
 
 # Extra funciton
@@ -68,6 +76,60 @@ def corgi():
     index = random.randint(0, len(images) - 1)
     url = images[index].link
     return url
+
+
+def portal(acc, pwd):
+    content = ""
+    chromedriver_path = "/app/.chromedriver/bin/chromedriver"
+    chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', None)
+    opts = webdriver.ChromeOptions()
+    opts.binary_location = chrome_bin
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument('headless')
+
+    driver = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=opts)
+    driver.implicitly_wait(5)
+    driver.get("https://portalx.yzu.edu.tw/PortalSocialVB/Login.aspx")
+    account = driver.find_element_by_id("Txt_UserID")
+    account.send_keys(acc)
+    password = driver.find_element_by_id("Txt_Password")
+    password.send_keys(pwd)
+    login = driver.find_element_by_id("ibnSubmit")
+    login.click()
+
+    driver.implicitly_wait(20)
+    dtask = driver.find_element_by_id("divTasks")
+    tasks = dtask.find_elements_by_tag_name("a")
+
+    for task in tasks:
+        content += task.text + '\n'
+    return content
+
+
+def weather(city):
+    target_url = 'https://www.cwb.gov.tw/V7/forecast/taiwan/%s.htm' % city
+    rs = requests.session()
+    res = rs.get(target_url)
+    res.encoding = 'utf-8'
+    soup = BeautifulSoup(res.text, 'html.parser')
+    header = ['溫度(攝氏) : ', '天氣狀況 : ', '舒適度 : ', '降雨機率(%) : ']
+    timespan = ['今日白天', '今晚至明晨', '明日白天']
+    result = []
+    content = ""
+    for index, data in enumerate(soup.select('table.FcstBoxTable01 tbody tr td')):
+        if index % 4 == 1:
+            title = data.find('img')
+            title = title['alt']
+        else:
+            title = data.text
+        result.append(header[index % 4] + title)
+
+    for index, data in enumerate(result):
+        if index % 4 == 0:
+            content += '\n' + timespan[index // 4] + '\n'
+        content += data + '\n'
+    return content
 
 
 def youtube(target):
@@ -141,6 +203,14 @@ def handle_message(event):
     if event.message.text.lower() in Animal:
         url = corgi()
         message = ImageSendMessage(original_content_url=url, preview_image_url=url)
+    elif event.message.text[0:6].lower() == "portal":
+        account, password = event.message.text[7:].split(' ')
+        content = portal(account, password)
+        message = TextSendMessage(text=content)
+    elif str(event.message.text)[0:2] == "天氣":
+        target = event.message.text[3:]
+        content = weather(City_convert[target])
+        message = TextSendMessage(text=content)
     elif event.message.text.lower() == "help":
         message = TemplateSendMessage(
             alt_text='help',
