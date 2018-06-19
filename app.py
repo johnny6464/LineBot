@@ -44,7 +44,8 @@ City_convert = {'台北': 'Taipei_City', '新北': 'New_Taipei_City', '桃園': 
                 '彰化': 'Changhua_County', '南投': 'Nantou_County','雲林': 'Yunlin_County',
                 '嘉義': 'Chiayi_City','屏東': 'Pingtung_County', '宜蘭': 'Yilan_County',
                 '花蓮': 'Hualien_County','台東': 'Taitung_County', '澎湖': 'Penghu_County',
-                '金門': 'Kinmen_County', '連江': 'Lienchiang_County'}
+                '金門': 'Kinmen_County', '連江': 'Lienchiang_County', '臺北': 'Taipei_City',
+                '臺中': 'Taichung_City', '臺南': 'Tainan_City', '臺東': 'Taitung_County'}
 
 
 # Extra funciton
