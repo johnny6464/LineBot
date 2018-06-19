@@ -1,6 +1,3 @@
-
-
-
 import random
 import requests
 import configparser
@@ -94,23 +91,27 @@ def portal(acc, pwd):
     opts.add_argument("--no-sandbox")
     opts.add_argument('headless')
 
-    driver = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=opts)
-    driver.implicitly_wait(5)
-    driver.get("https://portalx.yzu.edu.tw/PortalSocialVB/Login.aspx")
-    account = driver.find_element_by_id("Txt_UserID")
-    account.send_keys(acc)
-    password = driver.find_element_by_id("Txt_Password")
-    password.send_keys(pwd)
-    login = driver.find_element_by_id("ibnSubmit")
-    login.click()
+    try:
+        driver = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=opts)
+        driver.implicitly_wait(10)
+        driver.get("https://portalx.yzu.edu.tw/PortalSocialVB/Login.aspx")
+        account = driver.find_element_by_id("Txt_UserID")
+        account.send_keys(acc)
+        password = driver.find_element_by_id("Txt_Password")
+        password.send_keys(pwd)
+        login = driver.find_element_by_id("ibnSubmit")
+        login.click()
 
-    driver.implicitly_wait(20)
-    dtask = driver.find_element_by_id("divTasks")
-    tasks = dtask.find_elements_by_tag_name("a")
+        driver.implicitly_wait(20)
+        dtask = driver.find_element_by_id("divTasks")
+        tasks = dtask.find_elements_by_tag_name("a")
+        days = dtask.find_elements_by_tag_name("span")
 
-    for task in tasks:
-        content += task.text + '\n'
-    return content
+        for index in range(len(tasks)):
+            content += tasks[index].text + "\n剩餘" + days[index].text + "\n"
+        return content
+    except Exception as e:
+        return e
 
 
 def weather(city):
@@ -120,15 +121,19 @@ def weather(city):
     res.encoding = 'utf-8'
     soup = BeautifulSoup(res.text, 'html.parser')
     header = ['溫度(攝氏) : ', '天氣狀況 : ', '舒適度 : ', '降雨機率(%) : ']
-    timespan = ['今日白天', '今晚至明晨', '明日白天']
+    timespan = []
     result = []
     content = ""
-    for index, data in enumerate(soup.select('table.FcstBoxTable01 tbody tr td')):
+    for index, tdata in enumerate(soup.select('table.FcstBoxTable01 tbody tr th')):
+        tdata = tdata.text
+        timespan.append(tdata[:tdata.find(' ')] + '\n' + tdata[tdata.find(' ') + 1:])
+
+    for index, wdata in enumerate(soup.select('table.FcstBoxTable01 tbody tr td')):
         if index % 4 == 1:
-            title = data.find('img')
+            title = wdata.find('img')
             title = title['alt']
         else:
-            title = data.text
+            title = wdata.text
         result.append(header[index % 4] + title)
 
     for index, data in enumerate(result):
