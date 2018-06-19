@@ -1,3 +1,6 @@
+
+
+
 import random
 import requests
 import configparser
@@ -33,6 +36,8 @@ Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
 Movie = ["movie", "movies", "電影"]
 News = ["news", "新聞"]
 tubesearch = False
+weathersearch = False
+translatesearch = False
 City_convert = {'台北': 'Taipei_City', '新北': 'New_Taipei_City', '桃園': 'Taoyuan_City',
                 '台中': 'Taichung_City', '台南': 'Tainan_City', '高雄': 'Kaohsiung_City',
                 '基隆': 'Keelung_City', '新竹': 'Hsinchu_City','苗栗': 'Miaoli_County',
@@ -196,6 +201,8 @@ def movie():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     global tubesearch
+    global weathersearch
+    global translatesearch
     message = ""
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
@@ -206,10 +213,6 @@ def handle_message(event):
     elif event.message.text[0:6].lower() == "portal":
         account, password = event.message.text[7:].split(' ')
         content = portal(account, password)
-        message = TextSendMessage(text=content)
-    elif str(event.message.text)[0:2] == "天氣":
-        target = event.message.text[3:]
-        content = weather(City_convert[target])
         message = TextSendMessage(text=content)
     elif event.message.text.lower() == "help":
         message = TemplateSendMessage(
@@ -249,6 +252,14 @@ def handle_message(event):
                     MessageTemplateAction(
                         label='YouTube查詢',
                         text='youtube'
+                    ),
+                    MessageTemplateAction(
+                        label='翻譯',
+                        text='翻譯'
+                    ),
+                    MessageTemplateAction(
+                        label='天氣查詢',
+                        text='天氣'
                     )
                 ]
             )
@@ -258,19 +269,28 @@ def handle_message(event):
         target = event.message.text
         content = youtube(target)
         message = TextSendMessage(text=content)
+    elif translatesearch:
+        translatesearch = False
+        target = event.message.text
+        if is_chinese(target[0]):
+            content = translate(quote(target), "en", "zh-TW")
+        else:
+            content = translate(target)
+        message = TextSendMessage(text=content)
+    elif weathersearch:
+        weathersearch = False
+        target = event.message.text
+        content = weather(City_convert[target])
+        message = TextSendMessage(text=content)
     elif event.message.text == "youtube" and not tubesearch:
         tubesearch = True
         message = TextSendMessage(text="請輸入查詢內容")
-    elif str(event.message.text)[0:2] == "翻譯":
-        if event.message.text[3:]:
-            target = event.message.text[3:]
-            if is_chinese(target[0]):
-                content = translate(quote(target), "en", "zh-TW")
-            else:
-                content = translate(target)
-            message = TextSendMessage(text=content)
-        else:
-            message = TextSendMessage(text="請輸入要翻譯的字")
+    elif str(event.message.text)[0:2] == "天氣" and not weathersearch:
+        weathersearch = True
+        message = TextSendMessage(text="請輸入查詢地區")
+    elif str(event.message.text)[0:2] == "翻譯" and not translatesearch:
+        translatesearch = True
+        message = TextSendMessage(text="請輸入翻譯內容")
     elif event.message.text.lower() in News:
         content = technews()
         message = TextSendMessage(text=content)
@@ -294,7 +314,6 @@ def handle_sticker_message(event):
     sticker_id = str(sticker_ids[index_id])
     sticker_message = StickerSendMessage(package_id='1', sticker_id=sticker_id)
     line_bot_api.reply_message(event.reply_token, sticker_message)
-
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
