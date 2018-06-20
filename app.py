@@ -36,7 +36,7 @@ Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
 Movie = ["movie", "movies", "電影"]
 News = ["news", "新聞"]
 Weather = ["天氣", "氣象", "weather"]
-Greetings = ["嗨", "你好", "妳好", "安安", "哈囉", "幹", "hello", "hi"]
+Greetings = ["嗨", "你好", "早安", "安安", "哈囉", "yo", "hello", "hi"]
 City_convert = {'台北': 'Taipei_City', '新北': 'New_Taipei_City', '桃園': 'Taoyuan_City',
                 '台中': 'Taichung_City', '台南': 'Tainan_City', '高雄': 'Kaohsiung_City',
                 '基隆': 'Keelung_City', '新竹': 'Hsinchu_City','苗栗': 'Miaoli_County',
@@ -84,16 +84,16 @@ def corgi():
 
 
 def portal(acc, pwd):
-    content = ""
-    chromedriver_path = "/app/.chromedriver/bin/chromedriver"
-    chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', None)
-    opts = webdriver.ChromeOptions()
-    opts.binary_location = chrome_bin
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument('--headless')
-
     try:
+        content = ""
+        chromedriver_path = "/app/.chromedriver/bin/chromedriver"
+        chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', None)
+        opts = webdriver.ChromeOptions()
+        opts.binary_location = chrome_bin
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument('--headless')
+
         driver = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=opts)
         driver.implicitly_wait(20)
         driver.get("https://portalx.yzu.edu.tw/PortalSocialVB/Login.aspx")
