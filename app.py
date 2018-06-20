@@ -5,6 +5,9 @@ import os
 import urllib.request
 import sys
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as ec
 from urllib.parse import quote
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
@@ -32,9 +35,8 @@ album_id = config['imgur_api']['Album_id']
 Animal = ["corgi", "柯基", "狗狗", "狗", "dog", "dogs"]
 Movie = ["movie", "movies", "電影"]
 News = ["news", "新聞"]
-tubesearch = False
-weathersearch = False
-translatesearch = False
+Weather = ["天氣", "氣象", "weather"]
+Greetings = ["嗨", "你好", "妳好", "安安", "哈囉", "幹", "hello", "hi"]
 City_convert = {'台北': 'Taipei_City', '新北': 'New_Taipei_City', '桃園': 'Taoyuan_City',
                 '台中': 'Taichung_City', '台南': 'Tainan_City', '高雄': 'Kaohsiung_City',
                 '基隆': 'Keelung_City', '新竹': 'Hsinchu_City','苗栗': 'Miaoli_County',
@@ -89,11 +91,11 @@ def portal(acc, pwd):
     opts.binary_location = chrome_bin
     opts.add_argument("--disable-gpu")
     opts.add_argument("--no-sandbox")
-    opts.add_argument('headless')
+    opts.add_argument('--headless')
 
     try:
         driver = webdriver.Chrome(executable_path=chromedriver_path, chrome_options=opts)
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(20)
         driver.get("https://portalx.yzu.edu.tw/PortalSocialVB/Login.aspx")
         account = driver.find_element_by_id("Txt_UserID")
         account.send_keys(acc)
@@ -102,13 +104,22 @@ def portal(acc, pwd):
         login = driver.find_element_by_id("ibnSubmit")
         login.click()
 
-        driver.implicitly_wait(20)
+        try:
+            WebDriverWait(driver, 3).until(ec.alert_is_present())
+            alert = driver.switch_to.alert
+            return alert.text
+        except TimeoutException:
+            pass
+
         dtask = driver.find_element_by_id("divTasks")
         tasks = dtask.find_elements_by_tag_name("a")
         days = dtask.find_elements_by_tag_name("span")
 
         for index in range(len(tasks)):
-            content += tasks[index].text + "\n剩餘" + days[index].text + "\n"
+            if index < len(days):
+                content += tasks[index].text + "\n剩餘" + days[index].text + "\n"
+            else:
+                content += tasks[index].text
         return content
     except Exception as e:
         return e
@@ -206,103 +217,62 @@ def movie():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    global tubesearch
-    global weathersearch
-    global translatesearch
     message = ""
+    cmd = ""
+    argv = ""
+    argv2 = ""
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
+    text = event.message.text.strip().lower()
+    cmd = text.split(' ')[0]
+    if len(text.split(' ')) >= 2:
+        argv = text.split(' ')[1]
+    if len(text.split(' ')) == 3:
+        argv2 = text.split(' ')[2]
 
-    if event.message.text.lower() in Animal:
-        url = corgi()
-        message = ImageSendMessage(original_content_url=url, preview_image_url=url)
-    elif event.message.text[0:6].lower() == "portal":
-        account, password = event.message.text[7:].split(' ')
-        content = portal(account, password)
-        message = TextSendMessage(text=content)
-    elif event.message.text.lower() == "help":
-        message = TemplateSendMessage(
-            alt_text='help',
-            template=ButtonsTemplate(
-                title='help',
-                text='請選擇',
-                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
-                actions=[
-                    MessageTemplateAction(
-                        label='新聞',
-                        text='news'
-                    ),
-                    MessageTemplateAction(
-                        label='電影',
-                        text='movies'
-                    ),
-                    MessageTemplateAction(
-                        label='動物',
-                        text='corgi'
-                    ),
-                    MessageTemplateAction(
-                        label='more',
-                        text='more'
-                    )
-                ]
-            )
-        )
-    elif event.message.text.lower() == "more":
-        message = TemplateSendMessage(
-            alt_text='help2',
-            template=ButtonsTemplate(
-                title='help2',
-                text='請選擇',
-                thumbnail_image_url='https://i.imgur.com/xQF5dZT.jpg',
-                actions=[
-                    MessageTemplateAction(
-                        label='YouTube查詢',
-                        text='youtube'
-                    ),
-                    MessageTemplateAction(
-                        label='翻譯',
-                        text='翻譯'
-                    ),
-                    MessageTemplateAction(
-                        label='天氣查詢',
-                        text='天氣'
-                    )
-                ]
-            )
-        )
-    elif tubesearch:
-        tubesearch = False
-        target = event.message.text
-        content = youtube(target)
-        message = TextSendMessage(text=content)
-    elif translatesearch:
-        translatesearch = False
-        target = event.message.text
-        if is_chinese(target[0]):
-            content = translate(quote(target), "en", "zh-TW")
+    if cmd == "portal":
+        if argv != "" and argv2 != "":
+            content = portal(argv, argv2)
+            message = TextSendMessage(text=content)
         else:
-            content = translate(target)
+            message = TextSendMessage(text="請輸入帳號密碼")
+    elif cmd == "help":
+        content = "movie\n最新電影\n\nnews\n最新科技新聞\n\n狗狗\n可愛的柯基~~\n\n天氣 所在的縣市(2個字)\n這2天的氣象\n\nyoutube 音樂名稱\n幫你找音樂\n\n翻譯 想翻譯的字\n中翻英還是英翻中\n都是輕輕鬆鬆\n\nportal 帳號 密碼\n幫你查查作業"
         message = TextSendMessage(text=content)
-    elif weathersearch:
-        weathersearch = False
-        target = event.message.text
-        content = weather(City_convert[target])
-        message = TextSendMessage(text=content)
-    elif event.message.text == "youtube" and not tubesearch:
-        tubesearch = True
-        message = TextSendMessage(text="請輸入查詢內容")
-    elif str(event.message.text)[0:2] == "天氣" and not weathersearch:
-        weathersearch = True
-        message = TextSendMessage(text="請輸入查詢地區")
-    elif str(event.message.text)[0:2] == "翻譯" and not translatesearch:
-        translatesearch = True
-        message = TextSendMessage(text="請輸入翻譯內容")
-    elif event.message.text.lower() in News:
+    elif cmd == "youtube":
+        if argv != "":
+            content = youtube(argv)
+            message = TextSendMessage(text=content)
+        else:
+            message = TextSendMessage(text="請輸入想查的影片")
+    elif cmd == "翻譯":
+        if argv != "":
+            if is_chinese(argv[0]):
+                content = translate(quote(argv), "en", "zh-TW")
+            else:
+                content = translate(argv)
+            message = TextSendMessage(text=content)
+        else:
+            message = TextSendMessage(text="記得輸入要翻譯的字喔")
+    elif cmd in Weather:
+        if argv in City_convert:
+            target = argv
+            content = weather(City_convert[target])
+            message = TextSendMessage(text=content)
+        else:
+            message = TextSendMessage(text="請輸入正確的縣市名稱")
+    elif cmd in News:
         content = technews()
         message = TextSendMessage(text=content)
-    elif event.message.text.lower() in Movie:
+    elif cmd in Movie:
         content = movie()
         message = TextSendMessage(text=content)
+    elif cmd in Animal:
+        url = corgi()
+        message = ImageSendMessage(original_content_url=url, preview_image_url=url)
+    elif cmd in Greetings:
+        index = random.randint(0, len(Greetings) - 1)
+        message = TextSendMessage(text=Greetings[index])
     else:
         message = TextSendMessage(text="人家看不懂耶~")
 
