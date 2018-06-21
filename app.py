@@ -221,14 +221,13 @@ def handle_message(event):
     cmd = ""
     argv = ""
     argv2 = ""
-    print("event.reply_token:", event.reply_token)
-    print("event.message.text:", event.message.text)
-    text = event.message.text.strip().lower()
-    cmd = text.split(' ')[0].replace(' ', '')
+    text = event.message.text.strip()
+    cmd = text.split(' ')[0].replace(' ', '').lower()
     if len(text.split(' ')) >= 2:
         argv = text.split(' ')[1].replace(' ', '')
     if len(text.split(' ')) == 3:
         argv2 = text.split(' ')[2].replace(' ', '')
+    print(cmd + ' ' + argv + ' ' + argv2)
 
     if cmd == "portal":
         if argv != "" and argv2 != "":
