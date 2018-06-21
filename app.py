@@ -222,11 +222,11 @@ def handle_message(event):
     argv = ""
     argv2 = ""
     text = event.message.text.strip()
-    cmd = text.split(' ')[0].replace(' ', '').lower()
-    if len(text.split(' ')) >= 2:
-        argv = text.split(' ')[1].replace(' ', '')
-    if len(text.split(' ')) == 3:
-        argv2 = text.split(' ')[2].replace(' ', '')
+    cmd = text.split()[0].lower()
+    if len(text.split()) >= 2:
+        argv = text.split()[1]
+    if len(text.split()) == 3:
+        argv2 = text.split()[2]
     print(cmd + ' ' + argv + ' ' + argv2)
 
     if cmd == "portal":
