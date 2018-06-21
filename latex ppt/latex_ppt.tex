@@ -30,6 +30,7 @@
 \usepackage{hyperref}
 
 \begin{document}
+\setbeamertemplate{frametitle}[default][center]
 \begin{CJK}{UTF8}{bkai}
 \begin{frame}%%封面
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
@@ -40,66 +41,46 @@
 \date{2018/6/22}
 \titlepage
 \end{frame}
-%
-\begin{frame}%功能介紹
+
+\begin{frame}%%設計理念
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge設計理念}
+實作風行的LineBot，根據特定的語句，它會有不同的反
+應，我們試著利用python來做出也能在Line上運行的機器人。
+\includegraphics[width=12cm,height=5cm]{relative.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%功能介紹
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
 \clearpage
 \frametitle{\Huge功能介紹}
 \begin{itemize}
+\item 語意分析
+\pause
+\item 翻譯(中翻英、英翻中)
+\pause
+\item 查詢portal作業
+\pause
 \item 查詢最新電影
 \pause
 \item 最新科技新聞
-\pause
-\item 傳送可愛的狗圖片
 \pause
 \item 搜尋縣市天氣
 \pause
 \item 搜尋youtube音樂
 \pause
-\item 翻譯(中翻英、英翻中)
-\pause
-\item 查詢portal作業
+\item 傳送可愛的狗圖片
 \end{itemize}
 \titlepage
 \end{frame}
 
-\begin{frame}%%電影
+\begin{frame}%%語意分析
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
 \clearpage
-\frametitle{\Huge電影}
-\includegraphics[width=12cm,height=7.5cm]{movie.png} 
-\titlepage
-\end{frame}
-
-\begin{frame}%%新聞
-\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
-\clearpage
-\frametitle{\Huge新聞}
-\includegraphics[width=12cm,height=7.5cm]{technews.png} 
-\titlepage
-\end{frame}
-
-\begin{frame}%%圖片
-\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
-\clearpage
-\frametitle{\Huge圖片}
-\includegraphics[width=12cm,height=7.5cm]{corgi.png} 
-\titlepage
-\end{frame}
-
-\begin{frame}%%天氣
-\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
-\clearpage
-\frametitle{\Huge天氣}
-\includegraphics[width=12cm,height=7.5cm]{weather.png} 
-\titlepage
-\end{frame}
-
-\begin{frame}%%YouTube
-\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
-\clearpage
-\frametitle{\Huge YouTube}
-\includegraphics[width=12cm,height=7.5cm]{youtube.png} 
+\frametitle{\Huge語意分析}
+\includegraphics[width=12cm,height=7cm]{recognize.png} 
 \titlepage
 \end{frame}
 
@@ -107,7 +88,7 @@
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
 \clearpage
 \frametitle{\Huge翻譯}
-\includegraphics[width=12cm,height=7.5cm]{translate.png} 
+\includegraphics[width=12cm,height=7cm]{translate.png} 
 \titlepage
 \end{frame}
 
@@ -115,7 +96,7 @@
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
 \clearpage
 \frametitle{\Huge Portal}
-\includegraphics[width=12cm,height=7.5cm]{portal1.png} 
+\includegraphics[width=12cm,height=7cm]{portal1.png} 
 \titlepage
 \end{frame}
 
@@ -123,7 +104,47 @@
 \tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
 \clearpage
 \frametitle{\Huge Portal cont.}
-\includegraphics[width=12cm,height=7.5cm]{portal2.png} 
+\includegraphics[width=12cm,height=7cm]{portal2.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%電影
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge電影}
+\includegraphics[width=12cm,height=7cm]{movie.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%新聞
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge新聞}
+\includegraphics[width=12cm,height=7cm]{technews.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%天氣
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge天氣}
+\includegraphics[width=12cm,height=7cm]{weather.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%YouTube
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge YouTube}
+\includegraphics[width=12cm,height=7cm]{youtube.png} 
+\titlepage
+\end{frame}
+
+\begin{frame}%%圖片
+\tikz[remember picture,overlay] \node[opacity=0.2,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{background}};
+\clearpage
+\frametitle{\Huge圖片}
+\includegraphics[width=12cm,height=7cm]{corgi.png} 
 \titlepage
 \end{frame}
 
