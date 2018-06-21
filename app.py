@@ -224,11 +224,11 @@ def handle_message(event):
     print("event.reply_token:", event.reply_token)
     print("event.message.text:", event.message.text)
     text = event.message.text.strip().lower()
-    cmd = text.split(' ')[0]
+    cmd = text.split(' ')[0].replace(' ', '')
     if len(text.split(' ')) >= 2:
-        argv = text.split(' ')[1]
+        argv = text.split(' ')[1].replace(' ', '')
     if len(text.split(' ')) == 3:
-        argv2 = text.split(' ')[2]
+        argv2 = text.split(' ')[2].replace(' ', '')
 
     if cmd == "portal":
         if argv != "" and argv2 != "":
@@ -237,7 +237,7 @@ def handle_message(event):
         else:
             message = TextSendMessage(text="請輸入帳號密碼")
     elif cmd == "help":
-        content = "movie\n最新電影\n\nnews\n最新科技新聞\n\n狗狗\n可愛的柯基~~\n\n天氣 所在的縣市(2個字)\n這2天的氣象\n\nyoutube 音樂名稱\n幫你找音樂\n\n翻譯 想翻譯的字\n中翻英還是英翻中\n都是輕輕鬆鬆\n\nportal 帳號 密碼\n幫你查查作業"
+        content = "請一定要依照以下的格式輸入喔\n\nmovie\n最新電影\n\nnews\n最新科技新聞\n\n狗狗\n可愛的柯基~~\n\n天氣 所在的縣市(2個字)\n這2天的氣象\n\nyoutube 音樂名稱\n幫你找音樂\n\n翻譯 想翻譯的字\n中翻英還是英翻中\n都是輕輕鬆鬆\n\nportal 帳號 密碼\n幫你查查作業"
         message = TextSendMessage(text=content)
     elif cmd == "youtube":
         if argv != "":
